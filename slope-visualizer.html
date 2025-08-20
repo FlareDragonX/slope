@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slope & Intercept Visualizer</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #e6e6fa 0%, #f3eaff 100%);
+      color: #4b2e83;
+      font-family: 'Montserrat', 'Comic Sans MS', 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
+    }
+    h1 {
+      margin-top: 2.5rem;
+      color: #6a5acd;
+      font-size: 3rem;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 16px #b39ddb, 0 0 32px #fff;
+      font-family: 'Montserrat', 'Comic Sans MS', 'Arial', sans-serif;
+      font-weight: 900;
+      background: linear-gradient(90deg, #b39ddb 60%, #e6e6fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .input-group {
+      margin: 2rem 0 1.5rem 0;
+      display: flex;
+      gap: 1.2rem;
+      background: #fff8ffcc;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px #b39ddb55;
+      padding: 1.2rem 2.5rem;
+      align-items: center;
+      border: 2px solid #b39ddb;
+      position: relative;
+    }
+    label {
+      font-weight: bold;
+      font-size: 1.2rem;
+      font-family: 'Montserrat', 'Comic Sans MS', 'Arial', sans-serif;
+    }
+    input[type="number"] {
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 2px solid #b39ddb;
+      background: #f3eaff;
+      color: #4b2e83;
+      width: 100px;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 8px #b39ddb33;
+      transition: border 0.2s;
+    }
+    input[type="number"]:focus {
+      border: 2px solid #6a5acd;
+      outline: none;
+    }
+    button {
+      background: linear-gradient(90deg, #b39ddb 60%, #e6e6fa 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 1.5rem;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 16px #b39ddb55;
+      transition: background 0.2s, transform 0.2s;
+      letter-spacing: 1px;
+    }
+    button:hover {
+      background: #9575cd;
+      transform: scale(1.07) rotate(-2deg);
+      box-shadow: 0 8px 32px #b39ddb99;
+    }
+    .canvas-container {
+      position: relative;
+      margin-top: 2.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 700px;
+      height: 700px;
+      background: linear-gradient(135deg, #f3eaff 80%, #e6e6fa 100%);
+      border: 3px solid #b39ddb;
+      border-radius: 32px;
+      box-shadow: 0 8px 48px #b39ddb55;
+      overflow: visible;
+    }
+    canvas {
+      background: #f3eaff;
+      border: none;
+      border-radius: 24px;
+      box-shadow: 0 4px 32px #b39ddb33;
+      width: 640px;
+      height: 640px;
+      display: block;
+      margin: 0 auto;
+      transition: box-shadow 0.3s;
+    }
+    canvas:hover {
+      box-shadow: 0 8px 64px #b39ddb99;
+    }
+    /* Stickers */
+    .sticker {
+      position: absolute;
+      z-index: 10;
+      pointer-events: none;
+      transition: transform 0.3s;
+    }
+    .sticker:hover {
+      transform: scale(1.1) rotate(-5deg);
+    }
+  </style>
+</head>
+<body>
+  <h1>Slope & Intercept Visualizer</h1>
+  <div class="input-group">
+    <label for="slope">Slope (m):</label>
+    <input type="number" id="slope" value="1" step="any">
+    <label for="intercept">Intercept (b):</label>
+    <input type="number" id="intercept" value="0" step="any">
+    <button onclick="drawLine()">Plot Line</button>
+  </div>
+  <div class="canvas-container">
+  <canvas id="plot" width="640" height="640"></canvas>
+  </div>
+  <script>
+    function drawLine() {
+      const m = parseFloat(document.getElementById('slope').value);
+      const b = parseFloat(document.getElementById('intercept').value);
+      const canvas = document.getElementById('plot');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Draw axes
+      ctx.save();
+      ctx.strokeStyle = '#b39ddb';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 320);
+      ctx.lineTo(640, 320);
+      ctx.moveTo(320, 0);
+      ctx.lineTo(320, 640);
+      ctx.stroke();
+      // Draw grid
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#e6e6fa';
+      for (let i = 0; i <= 640; i += 64) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, 640);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(640, i);
+        ctx.stroke();
+      }
+      ctx.restore();
+      // Draw line
+      ctx.save();
+      ctx.shadowColor = '#b39ddb';
+      ctx.shadowBlur = 16;
+      ctx.strokeStyle = '#6a5acd';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      // y = mx + b, map x from -16 to 16
+      for (let x = -320; x <= 320; x++) {
+        let plotX = 320 + x;
+        let plotY = 320 - (m * (x / 20) + b) * 20;
+        if (x === -320) {
+          ctx.moveTo(plotX, plotY);
+        } else {
+          ctx.lineTo(plotX, plotY);
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+      // Draw labels
+      ctx.save();
+      ctx.fillStyle = '#4b2e83';
+      ctx.font = '22px Montserrat, Comic Sans MS, Arial';
+      ctx.fillText('X', 620, 340);
+      ctx.fillText('Y', 340, 40);
+      ctx.fillText('Origin', 340, 340);
+      ctx.restore();
+    }
+    // Initial draw
+    drawLine();
+  </script>
+</body>
+</html>
